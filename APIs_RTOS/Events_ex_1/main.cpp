@@ -13,28 +13,28 @@ Event<void(int)> event2(&queue, handler);
 
 void handler(int count)
 {
-    unsigned time_ms = equeue_tick();
-    printf("Timestamp = %d Event = %d \n", time_ms, count);
-    return;
+  unsigned time_ms = equeue_tick();
+  printf("Timestamp = %d Event = %d \n", time_ms, count);
+  return;
 }
 
 void post_events(void)
 {
-    // Events can be posted multiple times and enqueue gracefully until
-    // the dispatch function is called. Each event will be processed
-    // subject to any delay and period specified. Each time an event has
-    // been dispatched it will be re-queued ready for the next dispatch
-    // period.
-    event1.post(1);      // Event1 with a value of 1
-    event1.post(2);      // Event1 with a value of 2
-    event1.post(3);      // Event1 with a value of 3
+  // Events can be posted multiple times and enqueue gracefully until
+  // the dispatch function is called. Each event will be processed
+  // subject to any delay and period specified. Each time an event has
+  // been dispatched it will be re-queued ready for the next dispatch
+  // period.
+  event1.post(1);      // Event1 with a value of 1
+  event1.post(2);      // Event1 with a value of 2
+  event1.post(3);      // Event1 with a value of 3
 
-    // Cancel the last event posted ie Event1 with a value of 3
-    event1.cancel();
+  // Cancel the last event posted ie Event1 with a value of 3
+  event1.cancel();
 
-    event1.post(4);      // Event1 with a value of 4
+  event1.post(4);      // Event1 with a value of 4
 
-    event2.post(5);      // Event2 with a value of 5
+  event2.post(5);      // Event2 with a value of 5
 
 }
 
@@ -78,26 +78,26 @@ void post_events(void)
 
 int main()
 {
-    // Example 1 Dispatch posted events for a specified period
-    Thread event_thread;
+  // Example 1 Dispatch posted events for a specified period
+  Thread event_thread;
 
-    // The event can be manually configured for special timing requirements
-    // specified in milliseconds (using Chrono durations)
-    event1.delay(100ms);       // Starting delay - 100 msec
-    event1.period(200ms);      // Delay between each event - 200msec
+  // The event can be manually configured for special timing requirements
+  // specified in milliseconds (using Chrono durations)
+  event1.delay(100ms);       // Starting delay - 100 msec
+  event1.period(200ms);      // Delay between each event - 200msec
 
-    event2.delay(400ms);           // Starting delay - 400 msec
-    event2.period(non_periodic);   // Single non periodic event
+  event2.delay(400ms);           // Starting delay - 400 msec
+  event2.period(non_periodic);   // Single non periodic event
 
-    event_thread.start(callback(post_events));
+  event_thread.start(callback(post_events));
 
-    // Posted events are dispatched in the context of the queue's
-    // dispatch function. Note that the EventQueue library has yet to be
-    // converted to using Chrono times and thus times are still specified
-    // in integer millisecond units.
-    // 800 ms will allow the posted events to be dispatched multiple times
-    queue.dispatch_for(800ms);
+  // Posted events are dispatched in the context of the queue's
+  // dispatch function. Note that the EventQueue library has yet to be
+  // converted to using Chrono times and thus times are still specified
+  // in integer millisecond units.
+  // 800 ms will allow the posted events to be dispatched multiple times
+  queue.dispatch_for(800ms);
 
-    event_thread.join();
+  event_thread.join();
 
 }

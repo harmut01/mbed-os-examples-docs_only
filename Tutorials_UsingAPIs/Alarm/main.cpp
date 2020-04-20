@@ -4,10 +4,6 @@
  */
 #include "mbed.h"
 
-// Time constants in seconds
-std::chrono::hours hour_inc;
-std::chrono::minutes min_inc;
-
 // Globals
 DigitalOut alarm_out(D2, 0);
 DigitalOut alarm_led(LED_RED, 1);
@@ -19,45 +15,48 @@ InterruptIn sel(BUTTON2);
 
 LowPowerTicker alarm_event;
 
+std::chrono::hours hour_inc;
+std::chrono::minutes min_inc;
 std::chrono::microseconds  delay;
+
 volatile uint8_t  select_state = 0;
 
 // Timer Callbacks
 void inc_select(void)
 {
-    if (select_state < 2) {
-        select_state++;
-    } else {
-        // Use select button to disable alarm
-        alarm_out = 0;
-        alarm_led = 1;
-    }
+  if (select_state < 2) {
+    select_state++;
+  } else {
+    // Use select button to disable alarm
+    alarm_out = 0;
+    alarm_led = 1;
+  }
 }
 
 void set_time_leds(void)
 {
-    if (select_state == 0) {
-        hour_led = !hour_led;
-    } else {
-        min_led = !min_led;
-    }
+  if (select_state == 0) {
+    hour_led = !hour_led;
+  } else {
+    min_led = !min_led;
+  }
 }
 
 void inc_delay(void)
 {
-    if (select_state == 0) {
-        delay += hour_inc++;
-        hour_led = !hour_led;
-    } else {
-        delay =+ min_inc++;
-        min_led = !min_led;
-    }
+  if (select_state == 0) {
+    delay += hour_inc++;
+    hour_led = !hour_led;
+  } else {
+    delay =+ min_inc++;
+    min_led = !min_led;
+  }
 }
 
 void trigger_alarm_out(void)
 {
-    alarm_out = 1;
-    alarm_led = 0;
+  alarm_out = 1;
+  alarm_led = 0;
 }
 
 /* Use buttons to select the alarm time. Cycle through hours in an incrementing
@@ -81,33 +80,33 @@ void trigger_alarm_out(void)
 // Main thread
 int main()
 {
-    // Configure interrupt in pins (button controls)
-    sel.rise(inc_select);
-    inc_time.fall(set_time_leds);
-    inc_time.rise(inc_delay);
+  // Configure interrupt in pins (button controls)
+  sel.rise(inc_select);
+  inc_time.fall(set_time_leds);
+  inc_time.rise(inc_delay);
 
-    // Sleep while waiting for user input to set the desired delay
-    while (select_state < 2) {
-        ThisThread::sleep_for(10s);
-    }
+  // Sleep while waiting for user input to set the desired delay
+  while (select_state < 2) {
+    ThisThread::sleep_for(10s);
+  }
 
-    // Once the delay has been input, blink back the configured hours and
-    // minutes selected
-    for (uint8_t i = 0; i < hour_inc.count() * 2; i++) {
-        hour_led = !hour_led;
-        ThisThread::sleep_for(250ms);
-    }
+  // Once the delay has been input, blink back the configured hours and
+  // minutes selected
+  for (uint8_t i = 0; i < hour_inc.count() * 2; i++) {
+    hour_led = !hour_led;
+    ThisThread::sleep_for(250ms);
+  }
 
-    for (uint8_t i = 0; i < min_inc.count() * 2; i++) {
-        min_led = !min_led;
-        ThisThread::sleep_for(250ms);
-    }
+  for (uint8_t i = 0; i < min_inc.count() * 2; i++) {
+    min_led = !min_led;
+    ThisThread::sleep_for(250ms);
+  }
 
-    // Attach the low power ticker with the configured alarm delay
-    alarm_event.attach(&trigger_alarm_out, delay);
+  // Attach the low power ticker with the configured alarm delay
+  alarm_event.attach(&trigger_alarm_out, delay);
 
-    // Sleep in the main thread
-    while (1) {
-        sleep();
-    }
+  // Sleep in the main thread
+  while (1) {
+    sleep();
+  }
 }

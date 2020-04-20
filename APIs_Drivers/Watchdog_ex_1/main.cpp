@@ -5,9 +5,13 @@
 
 #include "mbed.h"
 
-const uint32_t TIMEOUT_MS = 5000;
+#include <mstd_atomic>
+
+using namespace std::chrono_literals;
+
+const auto TIMEOUT = 5000ms;
 InterruptIn button(BUTTON1);
-volatile int countdown = 9;
+mstd::atomic_int countdown{9};
 
 void trigger()
 {
@@ -31,6 +35,6 @@ int main()
     while (1) {
         printf("\r%3i", countdown--);
         fflush(stdout);
-        ThisThread::sleep_for(TIMEOUT_MS / 10);
+        ThisThread::sleep_for(TIMEOUT / 10);
     }
 }
